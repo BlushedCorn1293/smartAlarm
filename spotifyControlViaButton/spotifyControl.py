@@ -4,24 +4,11 @@ import time
 
 import network
 import credentials
-def connectToWifi():
-    ssid = credentials.SSID
-    password = credentials.PASSWORD
 
-    # Set up WiFi connection
-    wlan = network.WLAN(network.STA_IF)
-    wlan.active(True)
-    wlan.connect(ssid, password)
 
-    # Wait for the connection
-    while not wlan.isconnected():
-        time.sleep(1)
+import lib.connectToWifi as connectToWifi
+connectToWifi.connect()
 
-    print("Connected to WiFi")
-    ip = wlan.ifconfig()[0]
-    print("IP Address:", ip)
-
-connectToWifi()
 
 # Spotify API Configuration
 # TOKEN_URL = 'https://accounts.spotify.com/authorize?response_type=code&client_id=fa4ef692cad24fe39530ca8c98178070&redirect_uri=http://localhost:8888/callback&scope=user-modify-playback-state%20user-read-playback-state'
