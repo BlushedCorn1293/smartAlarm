@@ -1,12 +1,12 @@
 import requests
 import urllib.parse
-
+import credentials
 # Authorization URL
 # https://accounts.spotify.com/authorize?response_type=code&client_id=fa4ef692cad24fe39530ca8c98178070&redirect_uri=http://localhost:8888/callback&scope=user-modify-playback-state%20user-read-playback-state
 
 # Replace with your actual values
-CLIENT_ID = 'fa4ef692cad24fe39530ca8c98178070'
-CLIENT_SECRET = 'dc5f925f960245a1a46b0d4ad1d70842'
+CLIENT_ID = credentials.CLIENT_ID
+CLIENT_SECRET = credentials.CLIENT_SECRET
 REDIRECT_URI = 'http://localhost:8888/callback'
 AUTHORIZATION_CODE = 'AQAAvyEPRtDDsM4EMO-c--pvdesIpzOVYKyHM8dAS44c6gRjXucgFjl63OnjXfb9Vd9s20IGuTEUuFtnMdYBiyiQK2ry9NOfzYXypvPJS8igSMTXXndNh9WqEAzGblI1eOP7E0n5tPSRFebliDl2Qn7pilLjT51X8ogAR_QYzR-B88QC_oaKNjFZgFA6f3IVyo5usX8IO88eFtAyczgTESXuLj7MnaEvIYasIwc1cfeBo5tRypnb0w'
 

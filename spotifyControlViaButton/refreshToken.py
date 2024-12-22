@@ -5,9 +5,11 @@ import time
 import os
 import network
 
+import credentials
+
 def connectToWifi():
-    ssid = 'BT-W9CK8N'
-    password = 'yrVNQvM7mquCAq'
+    ssid = credentials.SSID
+    password = credentials.PASSWORD
 
     # Set up WiFi connection
     wlan = network.WLAN(network.STA_IF)
@@ -28,8 +30,8 @@ from lib.spotify_auth import SpotifyAuth
 
 def main():
     # Your Spotify app credentials
-    CLIENT_ID = 'fa4ef692cad24fe39530ca8c98178070'
-    CLIENT_SECRET = 'dc5f925f960245a1a46b0d4ad1d70842'
+    CLIENT_ID = credentials.CLIENT_ID
+    CLIENT_SECRET = credentials.CLIENT_SECRET
     REDIRECT_URI = 'http://localhost:8888/callback'
     
     # Create auth handler

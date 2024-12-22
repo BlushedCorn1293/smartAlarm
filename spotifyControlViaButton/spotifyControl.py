@@ -3,10 +3,10 @@ import urequests
 import time
 
 import network
-
+import credentials
 def connectToWifi():
-    ssid = 'BT-W9CK8N'
-    password = 'yrVNQvM7mquCAq'
+    ssid = credentials.SSID
+    password = credentials.PASSWORD
 
     # Set up WiFi connection
     wlan = network.WLAN(network.STA_IF)
@@ -69,122 +69,36 @@ def get_spotify_state():
 
 # get_spotify_state()
 
-
-
-
-
-
-def send_spotify_request(url, method='PUT'):
-    """Send a request to Spotify API."""
-    headers = {
-        'Authorization': f'Bearer {ACCESS_TOKEN}',
-        'Content-Type': 'application/json',
-        'Content-Length': '0' 
-    }
-    try:
-        if method.upper() == 'PUT':
-            response = urequests.put(url, headers=headers)
-        else:
-            response = urequests.post(url, headers=headers)
-        
-        print(f"Response: {response.status_code}")
-        response.close()
-    except Exception as e:
-        print(f"Error: {e}")
-
-def led_blink(num_blinks=1):
-    led_value = led.value()
-    not_led_value = not led_value
-    """Blink the LED."""
-    for _ in range(num_blinks):
-        led.value(not_led_value)
-        time.sleep(0.2)
-        led.value(led_value)
-        time.sleep(0.2)
-    led.value(led_value)
-
-
-# Pin setup
-led = Pin(9, Pin.OUT)  # GPIO pin connected to your LED
-button = Pin(28, Pin.IN, Pin.PULL_UP)  # GPIO pin connected to your button
-
-# Variables
-led_state = False  # Initial LED state
-previous_button_state = True  # Initial button state
-
-press_count = 0  # Number of button presses
-press_time = 0  # Time of the last press
-
-while True:
-    current_button_state = button.value()
-    
-    if not current_button_state and previous_button_state:
-        # Button press detected (button state goes from high to low)
-        press_count += 1  # Increment press count
-        press_time = time.ticks_ms()  # Record the time of the press
-
-    previous_button_state = current_button_state
-    
-    # Check for press count after 300ms (to detect double or triple press)
-    if time.ticks_diff(time.ticks_ms(), press_time) > 300:
-        if press_count == 1:
-            # Single press: Play/Pause
-            led_state = not led_state  # Toggle LED state
-            led.value(led_state)  # Update LED output
-
-            # Interact with Spotify API
-            if led_state:
-                print("Playing Spotify")
-                send_spotify_request(SPOTIFY_PLAY_URL, 'PUT')
-            else:
-                print("Pausing Spotify")
-                send_spotify_request(SPOTIFY_PAUSE_URL, 'PUT')
-        elif press_count == 2:
-            # Double press: Skip forward
-            print("Skipping forward")
-            led_blink(2)
-            send_spotify_request(SPOTIFY_NEXT_URL, 'POST')
-        elif press_count == 3:
-            # Triple press: Skip backward
-            print("Skipping backward")
-            led_blink(3)
-            send_spotify_request(SPOTIFY_PREVIOUS_URL, 'POST')
-
-        # Reset press count
-        press_count = 0
-    
-    time.sleep_ms(5)  # Small delay for stability
-
-
 def refresh_access_token():
-    """Request a new access token using the refresh token."""
-    global ACCESS_TOKEN
+    return None
+    # """Request a new access token using the refresh token."""
+    # global ACCESS_TOKEN
     
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-    }
+    # headers = {
+    #     'Content-Type': 'application/x-www-form-urlencoded',
+    # }
     
-    body = {
-        'grant_type': 'refresh_token',
-        'refresh_token': REFRESH_TOKEN,
-        'client_id': 'fa4ef692cad24fe39530ca8c98178070',  # Replace with your Spotify client ID
-        'client_secret': '7c893f2e185e45778153cfe78037ade4',  # Replace with your Spotify client secret
-    }
+    # body = {
+    #     'grant_type': 'refresh_token',
+    #     'refresh_token': REFRESH_TOKEN,
+    #     'client_id': credentials.CLIENT_ID,  # Replace with your Spotify client ID
+    #     'client_secret': credentials.CLIENT_SECRET,  # Replace with your Spotify client secret
+    # }
     
-    try:
-        response = urequests.post(TOKEN_URL, headers=headers, data=body)
+    # try:
+    #     response = urequests.post(TOKEN_URL, headers=headers, data=body)
         
-        if response.status_code == 200:
-            data = response.json()
-            ACCESS_TOKEN = data['access_token']
-            print("Access token refreshed successfully!")
-        else:
-            print(f"Error refreshing token: {response.status_code}")
+    #     if response.status_code == 200:
+    #         data = response.json()
+    #         ACCESS_TOKEN = data['access_token']
+    #         print("Access token refreshed successfully!")
+    #     else:
+    #         print(f"Error refreshing token: {response.status_code}")
         
-        response.close()
+    #     response.close()
 
-    except Exception as e:
-        print(f"Error refreshing token: {e}")
+    # except Exception as e:
+    #     print(f"Error refreshing token: {e}")
 
 def check_token_scopes():
     """Check if the token has the required scopes."""
