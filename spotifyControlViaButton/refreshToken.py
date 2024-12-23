@@ -27,13 +27,15 @@ def main():
         if not spotify_auth.get_initial_tokens(auth_code):
             print("Failed to get initial tokens")
             return
-    
+    print("Initial tokens received")
     while True:
         token = spotify_auth.get_valid_access_token()
+        print(token)
         if token:
             headers = {
                 'Authorization': f'Bearer {token}'
             }
+            print("Getting current player state")
             try:
                 response = urequests.get(
                     'https://api.spotify.com/v1/me/player',

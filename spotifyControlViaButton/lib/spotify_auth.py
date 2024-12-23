@@ -120,6 +120,7 @@ class SpotifyAuth:
         # If token is expired or will expire in next 60 seconds, refresh it
         if time.time() + 60 >= self.token_expiry:
             if not self.refresh_access_token():
+                print("Failed to refresh token")
                 return None
         
         return self.access_token
