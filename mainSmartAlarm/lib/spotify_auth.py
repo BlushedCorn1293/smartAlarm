@@ -75,7 +75,8 @@ class SpotifyAuth:
             print(f"Error during token exchange: {e}")
             return False
         finally:
-            response.close()
+            if 'response' in locals():
+                response.close()
 
     def refresh_access_token(self):
         """Refresh the access token using the refresh token"""
@@ -123,7 +124,7 @@ class SpotifyAuth:
             if not self.refresh_access_token():
                 print("Failed to refresh token")
                 return None
-        
+        print("Access token is valid")
         return self.access_token
     
     

@@ -1,4 +1,6 @@
 *.vscode
 *.micropico
+deletePicoFiles.py
+build/
 
 credentials.py
