@@ -2,23 +2,21 @@ import machine
 from picozero import Speaker
 
 from machine import Pin, PWM
-
-# Enter button GPIO pin values:
-alarmStopButtonPin = 
-buzzerPin = 
-modeSwitchPin = 
-yellowLED_Pin = 
-spotifyControlButtonPin_LED = 
-spotifyControlButtonPin = 
-rtc_SCL_Pin = 
-rtc_SDA_Pin = 
+alarmStopButtonPin = 22
+buzzerPin = 2
+modeSwitchPin = 3
+yellowLED_Pin = 10
+spotifyControlButtonPin_LED = 9
+spotifyControlButtonPin = 8
+rtc_SCL_Pin = 27
+rtc_SDA_Pin = 26
 
 alarmStopButton = machine.Pin(alarmStopButtonPin, machine.Pin.IN, machine.Pin.PULL_UP)  # Button on GPIO pin 14 (active low)
 buzzer = machine.PWM(buzzerPin)
 buzzer.duty_u16(0) # Turn off buzzer
 modeSwitch = machine.Pin(modeSwitchPin, machine.Pin.IN, machine.Pin.PULL_UP)
 spotifyControlButton = Pin(spotifyControlButtonPin, Pin.IN, Pin.PULL_UP)  # GPIO pin connected to your button
-spotifyControlButton_LED = PWM(Pin(spotifyControlButtonPin_LED))
+spotifyControlButton_LED = PWM(Pin(9))
 yellowLED = machine.Pin(yellowLED_Pin, machine.Pin.OUT)
 
 # Seven segment display pins
