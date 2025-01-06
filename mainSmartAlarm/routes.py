@@ -5,35 +5,28 @@ import os
 import gc
 import time
 import network
-
+import lib.dataManager as dataManager
 import lib.wifiConnection as wifiConnection
 ip = wifiConnection.ip
 
-alarm_list = [
-    { "id": '1', "name": 'Exam 1', "day": 1, "time": { "hour": 7, "minute": 0, "second": 0 }, "isOn": True },
-    { "id": '2', "name": 'Meeting', "day": 2, "time": { "hour": 9, "minute": 0, "second": 0 }, "isOn": False },
-    { "id": '3', "name": 'Lunch Break', "day": 3, "time": { "hour": 12, "minute": 30, "second": 0 }, "isOn": False },
-    { "id": '4', "name": 'Gym', "day": 4, "time": { "hour": 18, "minute": 0, "second": 0 }, "isOn": False },
-    { "id": '5', "name": 'Dinner', "day": 5, "time": { "hour": 20, "minute": 0, "second": 0 }, "isOn": True },
-    { "id": '6', "name": 'Study', "day": 6, "time": { "hour": 21, "minute": 0, "second": 0 }, "isOn": False },
-    { "id": '7', "name": 'Meditation', "day": 7, "time": { "hour": 22, "minute": 0, "second": 0 }, "isOn": True },
-    { "id": '8', "name": 'Sleep', "day": 1, "time": { "hour": 23, "minute": 0, "second": 0 }, "isOn": True },
-    { "id": '9', "name": 'Early Morning Walk', "day": 2, "time": { "hour": 5, "minute": 30, "second": 0 }, "isOn": False },
-    { "id": '10', "name": 'Breakfast', "day": 3, "time": { "hour": 7, "minute": 30, "second": 0 }, "isOn": True }
-]
 
-deadline_list = [
-    { "id": '1', "name": 'Algorithms Exam', "type": 'Exam', "dateTime": { "year": 2025, "month": 2, "day": 19, "hour": 9, "minute": 0, "second": 0 } },
-    { "id": '2', "name": 'Database Project Submission', "type": 'Coursework', "dateTime": { "year": 2025, "month": 2, "day": 20, "hour": 23, "minute": 59, "second": 0 } },
-    { "id": '3', "name": 'Operating Systems Exam', "type": 'Exam', "dateTime": { "year": 2025, "month": 2, "day": 21, "hour": 14, "minute": 0, "second": 0 } },
-    { "id": '4', "name": 'AI Assignment Submission', "type": 'Coursework', "dateTime": { "year": 2025, "month": 2, "day": 22, "hour": 17, "minute": 0, "second": 0 } },
-    { "id": '5', "name": 'Software Engineering Group Project', "type": 'Coursework', "dateTime": { "year": 2025, "month": 2, "day": 23, "hour": 12, "minute": 0, "second": 0 } },
-    { "id": '6', "name": 'Computer Networks Exam', "type": 'Exam', "dateTime": { "year": 2025, "month": 2, "day": 24, "hour": 10, "minute": 0, "second": 0 } },
-    { "id": '7', "name": 'Machine Learning Lab Submission', "type": 'Coursework', "dateTime": { "year": 2025, "month": 2, "day": 25, "hour": 16, "minute": 0, "second": 0 } },
-    { "id": '8', "name": 'Cyber Security Exam', "type": 'Exam', "dateTime": { "year": 2025, "month": 2, "day": 26, "hour": 11, "minute": 0, "second": 0 } },
-    { "id": '9', "name": 'Data Science Project Presentation', "type": 'Coursework', "dateTime": { "year": 2025, "month": 2, "day": 27, "hour": 13, "minute": 0, "second": 0 } },
-    { "id": '10', "name": 'Final Year Project Report', "type": 'Coursework', "dateTime": { "year": 2025, "month": 2, "day": 28, "hour": 23, "minute": 59, "second": 0 } }
-]
+# Load the data from the files
+deadline_list = dataManager.load_deadlines()
+alarm_list = dataManager.load_alarms()
+# Data only loaded once at the start of the program,
+# so changes made to the data will be saved to the files
+# using the saveAlarms and saveDeadlines functions
+# but not reloaded as the data is saved in alarm_list and deadline_list
+
+# The functions to save the data to the files
+def saveAlarms(alarm_list):
+    dataManager.save_alarms(alarm_list)
+def saveDeadlines(deadline_list):
+    dataManager.save_deadlines(deadline_list)
+
+# Print the loaded data
+print("Loaded Alarms:", alarm_list)
+print("Loaded Deadlines:", deadline_list)
 
 @server.route("/api/temperature", methods=["GET","POST"])
 def get_temperature(request):
@@ -109,26 +102,45 @@ def get_network_status(request):
 #     led_green.value(request.data["ledGreen"])
 #     return json.dumps({"message" : "Command sent successfully!"}), 200, {"Content-Type": "application/json"}
 
-@server.route("/api/alarms", methods=["GET", "PUT"])
+@server.route("/api/alarms", methods=["GET", "POST"])
 def get_alarms(request):
     if request.method == "GET":
         # Return the list of alarms
         return json.dumps({"alarms": alarm_list}), 200, {"Content-Type": "application/json"}
 
-    elif request.method == "PUT":
+    elif request.method == "POST":
         try:
-            # Parse the incoming data from the request (expecting JSON)
+            # Parse the incoming data from the request (expecting raw data)
             data = request.data
+            
+            # Initialize the missing_fields list
+            missing_fields = []
 
-            # Get the alarm to be updated
-            alarm_name = data.get("name")
-            alarm_day = data.get("day")
-            alarm_time = data.get("time")
-            alarm_isOn = data.get("isOn")
+            # Check for required fields in the incoming data
+            if "day" not in data:
+                missing_fields.append("Alarm day")
+            if "time" not in data or "hour" not in data["time"] or "minute" not in data["time"] or "second" not in data["time"]:
+                missing_fields.append("Valid Alarm time with hour, minute, and second")
 
-            if not alarm_name or not alarm_day or not alarm_time:
-                return json.dumps({"error": "Alarm name, day, and time are required"}), 400, {"Content-Type": "application/json"}
+            # If any required fields are missing, return a 400 error with the missing fields
+            if missing_fields:
+                return json.dumps({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400, {"Content-Type": "application/json"}
 
+            # Extract the alarm fields from the request data
+            
+            alarm_day = data["day"]
+            alarm_time = data["time"]
+            # Default to True if not provided
+            if "isOn" not in data:
+                alarm_isOn = True
+            else:
+                alarm_isOn = data["isOn"]
+                
+            if "alarm_name" not in data:
+                alarm_name = "Alarm"
+            else:
+                alarm_name = data["name"]
+            
             # Generate a new ID by incrementing the current max ID in the alarm_list
             # Assuming the id is a string of numbers, and they are sequential (1, 2, 3, etc.)
             new_id = str(max(int(alarm["id"]) for alarm in alarm_list) + 1)  # Generate a new unique id
@@ -144,18 +156,18 @@ def get_alarms(request):
 
             # Add the new alarm to the list
             alarm_list.append(new_alarm)
-
+            saveAlarms(alarm_list)
             # Return the updated alarm list and success message
             return json.dumps({"message": "New alarm added successfully!", "new_alarm": new_alarm}), 200, {"Content-Type": "application/json"}
-
+        
         except Exception as e:
             print(f"Error occurred: {str(e)}")
             return json.dumps({"error": f"An error occurred: {str(e)}"}), 500, {"Content-Type": "application/json"}
-    
+
     else:
             return json.dumps({"error": "Method not allowed!"}), 405, {"Content-Type": "application/json"}
         
-@server.route("/api/alarms/<id>", methods=["GET", "POST","DELETE"])
+@server.route("/api/alarms/<id>", methods=["GET", "PUT","DELETE"])
 def get_alarm_by_id(request, id):
     try:
         # Loop through the alarm_list to find a matching alarm
@@ -173,7 +185,7 @@ def get_alarm_by_id(request, id):
             else:
                 return json.dumps({"error": "Alarm not found!"}), 404, {"Content-Type": "application/json"}
 
-        elif request.method == "POST":
+        elif request.method == "PUT":
             if alarm:
                 # Parse the JSON data from the request
                 updated_data = request.data
@@ -185,7 +197,7 @@ def get_alarm_by_id(request, id):
                     alarm["time"] = updated_data["time"]
                 if "isOn" in updated_data:
                     alarm["isOn"] = updated_data["isOn"]
-
+                saveAlarms(alarm_list)
                 # Return a success message with the updated alarm
                 return json.dumps({"message": "Alarm updated successfully!", "updated_alarm": alarm}), 200, {"Content-Type": "application/json"}
             else:
@@ -195,6 +207,7 @@ def get_alarm_by_id(request, id):
             if alarm:
                 # Remove the alarm from the list
                 alarm_list.remove(alarm)
+                saveAlarms(alarm_list)
                 return json.dumps({"message": "Alarm deleted successfully!"}), 200, {"Content-Type": "application/json"}
             else:
                 return json.dumps({"error": "Alarm not found!"}), 404, {"Content-Type": "application/json"}
@@ -207,13 +220,13 @@ def get_alarm_by_id(request, id):
         return json.dumps({"error": f"An error occurred: {str(e)}"}), 500, {"Content-Type": "application/json"}
 
 # List all deadlines or create a new deadline
-@server.route("/api/deadlines", methods=["GET", "PUT"])
+@server.route("/api/deadlines", methods=["GET", "POST"])
 def get_deadlines(request):
     if request.method == "GET":
         # Return the list of deadlines
         return json.dumps({"deadlines": deadline_list}), 200, {"Content-Type": "application/json"}
 
-    elif request.method == "PUT":
+    elif request.method == "POST":
         try:
             # Parse the incoming data from the request (expecting JSON)
             data = request.data
@@ -223,8 +236,17 @@ def get_deadlines(request):
             deadline_type = data.get("type")
             deadline_date_time = data.get("dateTime")
 
-            if not deadline_name or not deadline_type or not deadline_date_time:
-                return json.dumps({"error": "Deadline name, type, and dateTime are required"}), 400, {"Content-Type": "application/json"}
+            missing_fields = []
+
+            if not deadline_name:
+                missing_fields.append("Alarm name")
+            if not deadline_type:
+                missing_fields.append("Alarm day")
+            if not deadline_date_time:
+                missing_fields.append("Alarm time")
+
+            if missing_fields:
+                return json.dumps({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400, {"Content-Type": "application/json"}
 
             # Generate a new ID by incrementing the current max ID in the deadline_list
             new_id = str(max(int(deadline["id"]) for deadline in deadline_list) + 1)  # Generate a new unique id
@@ -239,7 +261,7 @@ def get_deadlines(request):
 
             # Add the new deadline to the list
             deadline_list.append(new_deadline)
-
+            saveDeadlines(deadline_list)
             # Return the updated deadline list and success message
             return json.dumps({"message": "New deadline added successfully!", "new_deadline": new_deadline}), 200, {"Content-Type": "application/json"}
 
@@ -251,7 +273,7 @@ def get_deadlines(request):
         return json.dumps({"error": "Method not allowed!"}), 405, {"Content-Type": "application/json"}
 
 # Get, update, or delete a specific deadline by id
-@server.route("/api/deadlines/<id>", methods=["GET", "POST", "DELETE"])
+@server.route("/api/deadlines/<id>", methods=["GET", "PUT", "DELETE"])
 def get_deadline_by_id(request, id):
     try:
         # Loop through the deadline_list to find a matching deadline
@@ -263,36 +285,29 @@ def get_deadline_by_id(request, id):
         # Get the first deadline that matches, or None if no match is found
         deadline = matched_deadlines[0] if matched_deadlines else None
 
+        if not deadline:
+            return json.dumps({"error": "Deadline not found!"}), 404, {"Content-Type": "application/json"}
         if request.method == "GET":
-            if deadline:
-                return json.dumps(deadline), 200, {"Content-Type": "application/json"}
-            else:
-                return json.dumps({"error": "Deadline not found!"}), 404, {"Content-Type": "application/json"}
+            return json.dumps(deadline), 200, {"Content-Type": "application/json"}
 
-        elif request.method == "POST":
-            if deadline:
-                # Parse the JSON data from the request
-                updated_data = request.data
-                if "name" in updated_data:
-                    deadline["name"] = updated_data["name"]
-                if "type" in updated_data:
-                    deadline["type"] = updated_data["type"]
-                if "dateTime" in updated_data:
-                    deadline["dateTime"] = updated_data["dateTime"]
+        elif request.method == "PUT":
+            # Parse the JSON data from the request
+            updated_data = request.data
+            if "name" in updated_data:
+                deadline["name"] = updated_data["name"]
+            if "type" in updated_data:
+                deadline["type"] = updated_data["type"]
+            if "dateTime" in updated_data:
+                deadline["dateTime"] = updated_data["dateTime"]
+            saveDeadlines(deadline_list)
+            # Return a success message with the updated deadline
+            return json.dumps({"message": "Deadline updated successfully!", "updated_deadline": deadline}), 200, {"Content-Type": "application/json"}
 
-                # Return a success message with the updated deadline
-                return json.dumps({"message": "Deadline updated successfully!", "updated_deadline": deadline}), 200, {"Content-Type": "application/json"}
-            else:
-                return json.dumps({"error": "Deadline not found!"}), 404, {"Content-Type": "application/json"}
-        
         elif request.method == "DELETE":
-            if deadline:
-                # Remove the deadline from the list
-                deadline_list.remove(deadline)
-                return json.dumps({"message": "Deadline deleted successfully!"}), 200, {"Content-Type": "application/json"}
-            else:
-                return json.dumps({"error": "Deadline not found!"}), 404, {"Content-Type": "application/json"}
-            
+            # Remove the deadline from the list
+            deadline_list.remove(deadline)
+            saveDeadlines(deadline_list)
+            return json.dumps({"message": "Deadline deleted successfully!"}), 200, {"Content-Type": "application/json"}
         else:
             return json.dumps({"error": "Method not allowed!"}), 405, {"Content-Type": "application/json"}
         
@@ -300,13 +315,13 @@ def get_deadline_by_id(request, id):
         print(f"Error occurred: {str(e)}")
         return json.dumps({"error": f"An error occurred: {str(e)}"}), 500, {"Content-Type": "application/json"}
 
-@server.route("/api/", methods=["GET"])
+@server.route("/api", methods=["GET"])
 def get_api_routes(request):
      # Define all available routes and their descriptions
     api_routes = {
-        "GET /authorize": f"http://{ip}/authorize",
-        "POST /authorize": f"http://{ip}/authorize",
-        "GET /api/": f"http://{ip}/api/",
+        "GET /authorize_spotify": f"http://{ip}/authorize_spotify",
+        "POST /authorize_spotify": f"http://{ip}/authorize_spotify",
+        "GET /api": f"http://{ip}/api",
         "GET /api/temperature": f"http://{ip}/api/temperature",
         "GET /api/voltage": f"http://{ip}/api/voltage",
         "GET /api/memory_usage": f"http://{ip}/api/memory_usage",
@@ -329,7 +344,7 @@ def get_api_routes(request):
     system_info = {
         "api_routes": api_routes
     }
-
+   
     return json.dumps(system_info), 200, {"Content-Type": "application/json"}
 
 @server.catchall()

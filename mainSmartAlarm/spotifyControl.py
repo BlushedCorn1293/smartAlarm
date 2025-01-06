@@ -8,9 +8,17 @@ import credentials
 import json
 from lib.spotify_auth import SpotifyAuth
 import lib.wifiConnection as wifiConnection
+import gpio
 
+successfullWifiConnection = False
 # Connect to WiFi and get IP address
-ip = wifiConnection.connect()
+try:
+    ip = wifiConnection.connect()
+    successfullWifiConnection = True
+except Exception as e:
+    print(e)
+
+
 # Spotify API Configuration
 CLIENT_ID = credentials.CLIENT_ID
 CLIENT_SECRET = credentials.CLIENT_SECRET
@@ -81,8 +89,8 @@ def set_brightness(led, percent):
 
 
 spotify_auth = None
-led = None
-button = None
+led = gpio.spotifyControlButton_LED
+button = gpio.spotifyControlButton
 
 # Initialize globals
 previous_button_state = True  # Initial button state
@@ -144,12 +152,14 @@ def main():
     global spotify_auth
     global CLIENT_ID
     global CLIENT_SECRET
+    global button
+    global led
+
     # Pin setup
-    led = PWM(Pin(9))
     led.freq(1000)
     set_brightness(led, 50)
 
-    button = Pin(28, Pin.IN, Pin.PULL_UP)  # GPIO pin connected to your button
+    
 
     # Variables
     led_state = False  # Initial LED state

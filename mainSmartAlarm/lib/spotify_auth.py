@@ -124,7 +124,6 @@ class SpotifyAuth:
             if not self.refresh_access_token():
                 print("Failed to refresh token")
                 return None
-        print("Access token is valid")
         return self.access_token
     
     
