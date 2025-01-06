@@ -1,8 +1,8 @@
 *.vscode
 *.micropico
 deletePicoFiles.py
-gpio.py
+mainSmartAlarm/gpio.py
 build/
 *.pem
 *.json
-credentials.py
+mainSmartAlarm/credentials.py
