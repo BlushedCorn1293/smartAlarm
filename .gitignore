@@ -1,8 +1,9 @@
 *.vscode
 *.micropico
-deletePicoFiles.py
-**gpio.py
-build/
 *.pem
 *.json
+**gpio.py
 **credentials.py
+
+build/
+deletePicoFiles.py
