@@ -1,6 +1,6 @@
 # WiFi Credentials:
 SSID = ''
-PASSWORD = ''
+PASSWORD = 'test'
 
 # Spotify API Credentials:
 CLIENT_ID = ''

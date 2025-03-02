@@ -51,3 +51,4 @@ mobileApp/SmartAlarm/*.bak
 mobileApp/SmartAlarm/*.swp
 mobileApp/SmartAlarm/*.swo
 
+credentials.py
